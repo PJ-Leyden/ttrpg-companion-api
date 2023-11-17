@@ -23,7 +23,7 @@ namespace ttrpg_companion_api.Repository
 			var props = new ContainerProperties()
 			{
 				Id = "warhammer-character-sheets",
-				PartitionKeyPath = "/username"
+				PartitionKeyPath = "/username",
 			};
 
 			return await database.CreateContainerIfNotExistsAsync(containerProperties: props);

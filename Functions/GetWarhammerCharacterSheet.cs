@@ -32,7 +32,9 @@ public class GetWarhammerCharacterSheet
     {
         _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-        string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+		var test = new CosmosDbContainers();
+		
+		string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
         var data = JsonConvert.DeserializeObject<WarhammerCharacterSheet>(requestBody);
 
         var container = await CosmosDbDataAccess.GetContainer();
