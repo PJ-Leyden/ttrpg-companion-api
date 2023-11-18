@@ -37,9 +37,8 @@ public class GetWarhammerCharacterSheet
 		string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
         var data = JsonConvert.DeserializeObject<WarhammerCharacterSheet>(requestBody);
 
-        var container = await CosmosDbDataAccess.GetContainer();
 
-        await container.CreateItemAsync(data);
+        //await container.CreateItemAsync(data);
 
 		string responseMessage = data.Username;
 

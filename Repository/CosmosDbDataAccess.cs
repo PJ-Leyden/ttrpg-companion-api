@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace ttrpg_companion_api.Repository
 {
-	public static class CosmosDbDataAccess
+	public class CosmosDbDataAccess : ICosmosDbDataAccess
 	{
-		private static readonly CosmosClient _client;
-
-		static CosmosDbDataAccess()
+		private readonly CosmosClient _client;
+		
+		public CosmosDbDataAccess()
 		{
 			_client = new CosmosClient("AccountEndpoint=https://hs-ttrpg-companion-data.documents.azure.com:443/;AccountKey=wliMac6WrZymZrXtBDLneNCYPGYZiawHEuvx3fsSDhxHKaoXO5dS850PPLWfM82kf41xq5tA3aVeACDbYnP0Iw==;");
 		}
 
-		public static async Task<Container> GetContainer()
+		public async Task<Container> GetContainer()
 		{
 			Database database = _client.GetDatabase("ttrpg-companion-data");
 
