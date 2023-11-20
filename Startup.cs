@@ -10,6 +10,6 @@ public class Startup : FunctionsStartup
 {
 	public override void Configure(IFunctionsHostBuilder builder)
 	{
-		builder.Services.AddScoped<ICosmosDbDataAccess>();
+		builder.Services.AddScoped<ICosmosDbDataAccess, CosmosDbDataAccess>();
 	}
 }
