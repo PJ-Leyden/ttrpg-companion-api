@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using ttrpg_companion_api.Models;
+using ttrpg_companion_api.Models.Cosmos;
 using ttrpg_companion_api.Repository;
 
 namespace ttrpg_companion_api.Functions;

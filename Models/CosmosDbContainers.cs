@@ -9,7 +9,7 @@ public class CosmosDbContainers
 
 	public static Dictionary<string, string> PartitionKeys = new()
 	{
-		{ Users, "/tenant" },
+		{ Users, "/username" },
 		{ WarhammerCharacterSheets, "/username" }
 	};
 

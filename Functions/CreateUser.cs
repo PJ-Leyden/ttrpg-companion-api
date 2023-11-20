@@ -10,39 +10,37 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using ttrpg_companion_api.Models.Requests;
+using ttrpg_companion_api.Services;
 
 namespace ttrpg_companion_api.Functions
 {
-    public class CreateNewUser
+    public class CreateUser
     {
-        private readonly ILogger<CreateNewUser> _logger;
+        private readonly ILogger<CreateUser> _logger;
+        private readonly ICreateUserService _createUserService;
 
-        public CreateNewUser(ILogger<CreateNewUser> log)
+        public CreateUser(ILogger<CreateUser> log, ICreateUserService createUserService)
         {
             _logger = log;
+			_createUserService = createUserService;
         }
 
-        [FunctionName("CreateNewUser")]
+        [FunctionName("CreateUser")]
         [OpenApiOperation(operationId: "Run", tags: new[] { "name" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Header)]
-        [OpenApiParameter(name: "name", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The **Name** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "The OK response")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req)
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-            string name = req.Query["name"];
-
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
+            var data = JsonConvert.DeserializeObject<CreateUserRequest>(requestBody);
 
-            string responseMessage = string.IsNullOrEmpty(name)
-                ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-                : $"Hello, {name}. This HTTP triggered function executed successfully.";
+            var id = await _createUserService.CreateUser(data);
 
-            return new OkObjectResult(responseMessage);
+            return new OkObjectResult($"Successfully Created User with Id: {id}");
         }
     }
 }
