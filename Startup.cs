@@ -13,7 +13,8 @@ public class Startup : FunctionsStartup
 	public override void Configure(IFunctionsHostBuilder builder)
 	{
 		builder.Services.AddScoped<ICosmosDbDataAccess, CosmosDbDataAccess>();
-		builder.Services.AddScoped<ICreateUserService, CreateUserService>();
+		builder.Services.AddScoped<IUserService, UserService>();
+		builder.Services.AddScoped<ISessionService, SessionService>();
 		builder.Services.AddLogging((config) =>
 		{
 			config.AddApplicationInsights(

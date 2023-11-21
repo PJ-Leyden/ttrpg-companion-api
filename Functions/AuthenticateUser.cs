@@ -1,6 +1,7 @@
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -15,18 +16,18 @@ using ttrpg_companion_api.Services;
 
 namespace ttrpg_companion_api.Functions
 {
-    public class CreateUser
+    public class AuthenticateUser
     {
-        private readonly ILogger<CreateUser> _logger;
-        private readonly IUserService _userService;
+        private readonly ILogger<AuthenticateUser> _logger;
+		private readonly IUserService _userService;
 
-        public CreateUser(ILogger<CreateUser> log, IUserService userService)
+        public AuthenticateUser(ILogger<AuthenticateUser> log, IUserService userService)
         {
             _logger = log;
 			_userService = userService;
         }
 
-        [FunctionName("CreateUser")]
+        [FunctionName("AuthenticateUser")]
         [OpenApiOperation(operationId: "Run", tags: new[] { "name" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Header)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "The OK response")]
@@ -36,11 +37,15 @@ namespace ttrpg_companion_api.Functions
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var data = JsonConvert.DeserializeObject<CreateUserRequest>(requestBody);
+            var data = JsonConvert.DeserializeObject<AuthenticateUserRequest>(requestBody);
 
-            var id = await _userService.CreateUser(data);
+            var sessionKey = await _userService.AuthenticateUser(data);
+            if (sessionKey == null)
+            {
+	            return new UnauthorizedResult();
+            }
 
-            return new OkObjectResult($"Successfully Created User with Id: {id}");
+            return new OkObjectResult(sessionKey);
         }
     }
 }

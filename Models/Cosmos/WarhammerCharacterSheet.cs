@@ -6,7 +6,7 @@ namespace ttrpg_companion_api.Models.Cosmos;
 public class WarhammerCharacterSheet
 {
     [JsonProperty(PropertyName = "id")]
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     [JsonProperty(PropertyName = "username")]
     public string Username { get; set; } = string.Empty;
 }
