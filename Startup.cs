@@ -1,6 +1,10 @@
 ﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System;
+using System.Configuration;
 using ttrpg_companion_api.Repository;
 using ttrpg_companion_api.Services;
 
@@ -12,9 +16,27 @@ public class Startup : FunctionsStartup
 {
 	public override void Configure(IFunctionsHostBuilder builder)
 	{
+		var secret = Environment.GetEnvironmentVariable("JwtSettingsSecret");
+		if (string.IsNullOrEmpty(secret))
+		{
+			throw new ConfigurationErrorsException("JwtSettingsSecret must be set for security reasons.");
+		}
+
+		var tokenValidationParameters = new TokenValidationParameters()
+		{
+			ValidateIssuerSigningKey = true,
+			IssuerSigningKey =
+				new SymmetricSecurityKey(
+					Encoding.ASCII.GetBytes(secret)),
+			ValidateIssuer = false,
+			ValidateAudience = false,
+			RequireExpirationTime = false,
+			ValidateLifetime = true
+		};
+
 		builder.Services.AddScoped<ICosmosDbDataAccess, CosmosDbDataAccess>();
 		builder.Services.AddScoped<IUserService, UserService>();
-		builder.Services.AddScoped<ISessionService, SessionService>();
+		builder.Services.AddSingleton(typeof(TokenValidationParameters), tokenValidationParameters);
 		builder.Services.AddLogging((config) =>
 		{
 			config.AddApplicationInsights(

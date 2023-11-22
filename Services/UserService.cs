@@ -1,24 +1,29 @@
 ﻿using System.Text;
 using System.Threading.Tasks;
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
+using Microsoft.IdentityModel.Tokens;
 using ttrpg_companion_api.Models.Requests;
 using ttrpg_companion_api.Models;
 using ttrpg_companion_api.Models.Cosmos;
+using ttrpg_companion_api.Models.Response;
 using ttrpg_companion_api.Repository;
+using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
 
 namespace ttrpg_companion_api.Services;
 
 public class UserService : IUserService
 {
 	private readonly ICosmosDbDataAccess _dbAccess;
-	private ISessionService _sessionService;
+	private readonly TokenValidationParameters _tokenValidationParameters;
 
-	public UserService(ICosmosDbDataAccess dbAccess, ISessionService sessionService)
+	public UserService(ICosmosDbDataAccess dbAccess, TokenValidationParameters tokenValidationParameters)
 	{
 		_dbAccess = dbAccess;
-		_sessionService = sessionService;
+		_tokenValidationParameters = tokenValidationParameters;
 	}
 
 	public async Task<User?> GetUser(string username)
@@ -35,10 +40,14 @@ public class UserService : IUserService
 
 	public async Task<Guid> CreateUser(CreateUserRequest request)
 	{
+		// Verify username and email are not already in use.
+		// HTTP 409 if so
+
 		var userId = Guid.NewGuid();
 		var usersContainer = await _dbAccess.GetContainer(CosmosDbContainers.Users);
 
-		var hashedPass = HashString(request.Password);
+		//Encrypt Password
+		var hashedPass = Sha256HashString(request.Password);
 
 		var newUser = new User()
 		{
@@ -54,24 +63,12 @@ public class UserService : IUserService
 		return userId;
 	}
 
-	public async Task<Guid?> AuthenticateUser(AuthenticateUserRequest request)
+	public async Task<LoginResponse> LoginUser(LoginUserRequest userRequest)
 	{
-		var user = await GetUser(request.Username);
-		if (user == null)
-		{
-			return null; 
-		}
-
-		var givenPassword = HashString(request.Password);
-		if (CompareByteArrays(givenPassword, user.Password))
-		{
-			return await _sessionService.GetOrCreateSessionForUser(user.Id);
-		}
-
-		return null;
+		return await AuthenticateUser(userRequest);	
 	}
 
-	private byte[] HashString(string s)
+	private byte[] Sha256HashString(string s)
 	{
 		Encoding ascii = Encoding.ASCII;
 
@@ -90,5 +87,93 @@ public class UserService : IUserService
 		}
 
 		return true;
+	}
+
+	public async Task<LoginResponse> AuthenticateUser(LoginUserRequest userRequest)
+	{
+		LoginResponse authenticationResult = new LoginResponse();
+
+		var user = await GetUser(userRequest.Username);
+		if (user == null)
+		{
+			authenticationResult.Success = false;
+			authenticationResult.Errors.Add("Username not found.");
+			return authenticationResult;
+		}
+
+		var givenPassword = Sha256HashString(userRequest.Password);
+		if (!CompareByteArrays(givenPassword, user.Password))
+		{
+			authenticationResult.Success = false;
+			authenticationResult.Errors.Add("Password incorrect.");
+			return authenticationResult;
+		}
+
+		// authentication successful so generate jwt token  
+		var tokenHandler = new JwtSecurityTokenHandler();
+
+		try
+		{
+			var secret = Environment.GetEnvironmentVariable("JwtSettingsSecret");
+			var key = Encoding.ASCII.GetBytes(secret);
+
+			ClaimsIdentity Subject = new ClaimsIdentity(new[]
+			{
+				new Claim("UserId", user.Id.ToString()),
+				new Claim("FirstName", user.FirstName),
+				new Claim("LastName",user.LastName),
+				new Claim("Email",user.Email),
+				new Claim("Username",user.Username),
+				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+			});
+
+			var tokenDescriptor = new SecurityTokenDescriptor
+			{
+				Subject = Subject,
+				Expires = DateTime.UtcNow.Add(TimeSpan.Parse(Environment.GetEnvironmentVariable("JwtSettingsTokenLifetime"))),
+				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+			};
+			var token = tokenHandler.CreateToken(tokenDescriptor);
+			authenticationResult.Token = tokenHandler.WriteToken(token);
+			authenticationResult.Success = true;
+
+
+			var principal = ValidateAndGetClaimsFromToken(authenticationResult.Token);
+
+
+			return authenticationResult;
+		}
+		catch (Exception ex)
+		{
+			return null;
+		}
+
+	}
+
+	private ClaimsPrincipal ValidateAndGetClaimsFromToken(string token)
+	{
+		var tokenHandler = new JwtSecurityTokenHandler();
+
+		try
+		{
+			var principal = tokenHandler.ValidateToken(token, _tokenValidationParameters, out var validatedToken);
+			if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
+			{
+				return null;
+			}
+
+			return principal;
+		}
+		catch
+		{
+			return null;
+		}
+	}
+
+	private bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
+	{
+		return (validatedToken is JwtSecurityToken jwtSecurityToken) &&
+		       jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+			       StringComparison.InvariantCultureIgnoreCase);
 	}
 }

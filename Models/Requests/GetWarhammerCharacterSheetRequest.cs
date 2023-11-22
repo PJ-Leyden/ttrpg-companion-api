@@ -8,4 +8,6 @@ public class GetWarhammerCharacterSheetRequest
 	public int Id { get; set; }
 	[JsonProperty(PropertyName = "username")]
 	public string Username { get; set; } = string.Empty;
+
+
 }

@@ -6,13 +6,11 @@ public class CosmosDbContainers
 {
 	public static string Users = "users";
 	public static string WarhammerCharacterSheets = "warhammer-character-sheets";
-	public static string Sessions = "sessions";
 
 	public static Dictionary<string, string> PartitionKeys = new()
 	{
 		{ Users, "/username" },
 		{ WarhammerCharacterSheets, "/username" },
-		{ Sessions, "/userId" }
 	};
 
 	public static string? GetContainerPartitionKey(string containerName)

@@ -2,7 +2,7 @@
 
 namespace ttrpg_companion_api.Models.Requests;
 
-public class AuthenticateUserRequest
+public class LoginUserRequest
 {
 	[JsonProperty(PropertyName = "username")]
 	public string Username { get; set; }
