@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -42,14 +43,21 @@ namespace ttrpg_companion_api.Functions
 	            return new BadRequestResult();
             }
 
-            var response = await _userService.LoginUser(data);
-
-            if (!response.Success)
+            try
             {
-				return new UnauthorizedObjectResult(response.Errors);
-            }
+	            var response = await _userService.LoginUser(data);
+	            if (!response.Success)
+	            {
+		            return new UnauthorizedObjectResult(response.Errors);
+	            }
 
-            return new OkObjectResult(response.Token);
+	            return new OkObjectResult(response.Token);
+            }
+            catch (Exception ex)
+            {
+				return new UnauthorizedObjectResult(ex.Message);
+
+			}
         }
     }
 }

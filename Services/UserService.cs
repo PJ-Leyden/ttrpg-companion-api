@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -65,32 +66,6 @@ public class UserService : IUserService
 
 	public async Task<LoginResponse> LoginUser(LoginUserRequest userRequest)
 	{
-		return await AuthenticateUser(userRequest);	
-	}
-
-	private byte[] Sha256HashString(string s)
-	{
-		Encoding ascii = Encoding.ASCII;
-
-		var uniBytes = ascii.GetBytes(s);
-		return SHA256.HashData(uniBytes);
-	}
-
-	private bool CompareByteArrays(byte[] a, byte[] b)
-	{
-		for (int i = 0; i < a.Length - 1; i++)
-		{
-			if (a[i] != b[i])
-			{
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	public async Task<LoginResponse> AuthenticateUser(LoginUserRequest userRequest)
-	{
 		LoginResponse authenticationResult = new LoginResponse();
 
 		var user = await GetUser(userRequest.Username);
@@ -137,20 +112,61 @@ public class UserService : IUserService
 			authenticationResult.Token = tokenHandler.WriteToken(token);
 			authenticationResult.Success = true;
 
-
-			var principal = ValidateAndGetClaimsFromToken(authenticationResult.Token);
-
-
 			return authenticationResult;
 		}
 		catch (Exception ex)
 		{
+			return new LoginResponse()
+			{
+				Errors = new List<string>(){ex.Message},
+				Success = false
+			};
+		}
+	}
+
+
+	public async Task<UserData?> ValidateUserByJwt(string jwtToken)
+	{
+		var claims = ValidateAndGetClaimsFromToken(jwtToken);
+		if (claims == null)
+		{
 			return null;
 		}
 
+		var userData = new UserData()
+		{
+			Id = Guid.Parse(claims.FindFirst(c => c.Type == "UserId")?.Value),
+			FirstName = claims.FindFirst(c => c.Type == "FirstName")?.Value,
+			LastName = claims.FindFirst(c => c.Type == "LastName")?.Value,
+			Username = claims.FindFirst(c => c.Type == "Username")?.Value,
+			Email = claims.FindFirst(c => c.Type == "Email")?.Value,
+		};
+
+		return userData;
 	}
 
-	private ClaimsPrincipal ValidateAndGetClaimsFromToken(string token)
+	private byte[] Sha256HashString(string s)
+	{
+		Encoding ascii = Encoding.ASCII;
+
+		var uniBytes = ascii.GetBytes(s);
+		return SHA256.HashData(uniBytes);
+	}
+
+	private bool CompareByteArrays(byte[] a, byte[] b)
+	{
+		for (int i = 0; i < a.Length - 1; i++)
+		{
+			if (a[i] != b[i])
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private ClaimsPrincipal? ValidateAndGetClaimsFromToken(string token)
 	{
 		var tokenHandler = new JwtSecurityTokenHandler();
 
