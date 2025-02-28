@@ -8,7 +8,7 @@ trigger:
 
 variables:
   # Azure Resource Manager connection created during pipeline creation
-  azureSubscription: '8752421e-aa30-4316-a4f8-71acb13eef2c'
+  azureSubscription: 'f9cdea5b-9bc3-4505-851d-d4d89d4f22a1'
 
   # Function app name
   functionAppName: 'ttrpg-companion-api'
