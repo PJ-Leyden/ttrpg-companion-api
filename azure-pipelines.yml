@@ -73,4 +73,4 @@ stages:
               appType: 'functionApp'
               isFlexConsumption: true
               appName: 'ttrpg-companion-api'
-              package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+              package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
