@@ -67,10 +67,10 @@ stages:
         deploy:
 
           steps:
-          - task: AzureFunctionApp@1
-            displayName: 'Azure functions app deploy'
+          - task: AzureFunctionApp@2
             inputs:
-              azureSubscription: '$(azureSubscription)'
-              appType: functionApp
-              appName: $(functionAppName)
-              package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+              connectedServiceNameARM: 'ttrpg-companion-api-rg-service-connection'
+              appType: 'functionApp'
+              isFlexConsumption: true
+              appName: 'ttrpg-companion-api'
+              package: '$(System.DefaultWorkingDirectory)/**/*.zip'
