@@ -69,8 +69,8 @@ stages:
           steps:
           - task: AzureFunctionApp@2
             inputs:
-              connectedServiceNameARM: 'ttrpg-companion-api-rg-service-connection'
-              appType: 'functionApp'
+              connectedServiceNameARM: 'PJs Azure Subscription(4f21ac75-d99a-498a-972a-c4be490a2f04)'
+              appType: 'functionAppLinux'
               isFlexConsumption: true
               appName: 'ttrpg-companion-api'
               package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
