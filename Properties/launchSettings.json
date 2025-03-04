@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ttrpg_companion_api": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7024"
+    }
+  }
+}

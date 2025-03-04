@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ttrpg-companion-api", "ttrpg-companion-api.csproj", "{5C69E7B5-F008-4910-9839-BA7DB9B6FBF4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5C69E7B5-F008-4910-9839-BA7DB9B6FBF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C69E7B5-F008-4910-9839-BA7DB9B6FBF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C69E7B5-F008-4910-9839-BA7DB9B6FBF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C69E7B5-F008-4910-9839-BA7DB9B6FBF4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EB31A5C7-FCAF-4671-A51A-2E2661E7B1E4}
+	EndGlobalSection
+EndGlobal
